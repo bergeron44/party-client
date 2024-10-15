@@ -26,13 +26,9 @@ const AppContainer = styled.div`
   background: radial-gradient(circle, rgba(20, 20, 30, 1) 0%, rgba(0, 0, 0, 1) 100%);
   font-family: 'Roboto', sans-serif;
   padding: 20px;
-
-  @media (max-width: 768px) {
-    padding: 10px;
-  }
 `;
 
-const LoginContainer = styled.div`
+const CardContainer = styled.div`
   animation: ${fadeIn} 0.8s ease;
   background: rgba(25, 25, 35, 0.9);
   backdrop-filter: blur(10px);
@@ -40,11 +36,26 @@ const LoginContainer = styled.div`
   padding: 40px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   width: 90%;
-  max-width: 400px;
+  max-width: 450px;
   text-align: center;
+  transition: transform 0.2s;
 
   @media (max-width: 768px) {
     padding: 20px;
+  }
+
+  &:hover {
+    transform: scale(1.03);
+  }
+`;
+
+const Title = styled.h2`
+  color: #fd726d;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
   }
 `;
 
@@ -54,7 +65,7 @@ const Input = styled.input`
   border: 2px solid transparent;
   margin: 10px 0;
   width: 100%;
-  font-size: 1rem;
+  font-size: 1.2rem;
   transition: border 0.3s ease;
 
   &:focus {
@@ -70,7 +81,7 @@ const Button = styled.button`
   border: none;
   border-radius: 10px;
   margin: 10px 0;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.3s;
 
@@ -80,24 +91,8 @@ const Button = styled.button`
   }
 
   @media (max-width: 768px) {
-    font-size: 1rem;
+    font-size: 1.2rem;
     padding: 12px 20px;
-  }
-`;
-
-const LobbyContainer = styled.div`
-  animation: ${fadeIn} 0.8s ease;
-  background: rgba(25, 25, 35, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-
-  @media (max-width: 768px) {
-    padding: 20px;
   }
 `;
 
@@ -115,25 +110,10 @@ const PlayerItem = styled.li`
   transition: transform 0.2s;
   color: white;
   text-align: center;
+  font-size: 1.2rem;
 
   &:hover {
     transform: scale(1.05);
-  }
-`;
-
-const GameContainer = styled.div`
-  animation: ${fadeIn} 0.8s ease;
-  background: rgba(25, 25, 35, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-
-  @media (max-width: 768px) {
-    padding: 20px;
   }
 `;
 
@@ -143,9 +123,9 @@ const App = () => {
   const [gameCode, setGameCode] = useState('');
   const [players, setPlayers] = useState([]);
   const [question, setQuestion] = useState('');
-  const [appState, setAppState] = useState('connection'); // Track app state: 'connection', 'lobby', 'game'
+  const [appState, setAppState] = useState('connection');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isGameCreator, setIsGameCreator] = useState(false); // Track if the player is the creator
+  const [isGameCreator, setIsGameCreator] = useState(false);
 
   useEffect(() => {
     socket.on('players-updated', (updatedPlayers) => {
@@ -153,18 +133,15 @@ const App = () => {
     });
 
     socket.on('new-question', ({ question, selectedPlayer }) => {
-      console.log(question); // מציג את השאלה
-      console.log(selectedPlayer); // מציג את השחקן הנבחר
-      console.log(playerName); // מציג את שם השחקן הנוכחי
-      setQuestion(question); // מעדכן את השאלה
-      setSelectedPlayer(selectedPlayer); // מעדכן את השחקן הנבחר
-  });
+      setQuestion(question);
+      setSelectedPlayer(selectedPlayer);
+    });
 
     socket.on('game-started', () => {
       setAppState('game');
     });
+
     socket.on('game-ended', () => {
-      console.log("game endddddd");
       setAppState('end');
     });
 
@@ -182,21 +159,15 @@ const App = () => {
 
   const handleLogin = () => {
     if (playerName && gameCode) {
-      if (socket) {
-        console.log('Attempting to join game:', gameCode);
-        socket.emit('join-game', { gameCode, playerName }, (response) => {
-          console.log('Join game response:', response);
-          if (response.success) {
-            setGameCode(gameCode);
-            setAppState('lobby'); // Move to the game lobby
-            setErrorMessage(''); // Clear error message
-          } else {
-            setErrorMessage(response.message || 'Invalid game code. Please try again.');
-          }
-        });
-      } else {
-        setErrorMessage('Socket connection is not established. Please try again.');
-      }
+      socket.emit('join-game', { gameCode, playerName }, (response) => {
+        if (response.success) {
+          setGameCode(gameCode);
+          setAppState('lobby');
+          setErrorMessage('');
+        } else {
+          setErrorMessage(response.message || 'Invalid game code. Please try again.');
+        }
+      });
     } else {
       setErrorMessage('Please enter your name and game code.');
     }
@@ -207,7 +178,7 @@ const App = () => {
       setIsGameCreator(true);
       socket.emit('create-game', playerName, (newGameCode) => {
         setGameCode(newGameCode);
-        setAppState('lobby'); // Move to the lobby after creating the game
+        setAppState('lobby');
       });
     }
   };
@@ -217,15 +188,14 @@ const App = () => {
   };
 
   const handlePlayerAction = () => {
-    // Send action to server
     socket.emit('next-question', gameCode);
   };
 
   return (
     <AppContainer>
       {appState === 'connection' && (
-        <LoginContainer>
-          <h2 style={{ color: '#fd726d' }}>🍺🍺 כנס או צור משחק 🍺🍺</h2>
+        <CardContainer>
+          <Title>🍺 כנס או צור משחק 🍺</Title>
           <Input
             type="text"
             placeholder="Enter your name"
@@ -248,11 +218,11 @@ const App = () => {
             </div>
           )}
           {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-        </LoginContainer>
+        </CardContainer>
       )}
       {appState === 'lobby' && (
-        <LobbyContainer>
-          <h2 style={{ color: '#fd726d' }}>Lobby</h2>
+        <CardContainer>
+          <Title>Lobby</Title>
           <div style={{ color: 'white', marginBottom: '10px' }}>
             <strong>Game Code:</strong> {gameCode}
           </div>
@@ -262,62 +232,64 @@ const App = () => {
               <PlayerItem key={player._id}>
                 <div>Name: {player.name}</div>
                 <div>Score: {player.score}</div>
-                {/* Game creator indicator */}
                 {player.isGameCreator && <div style={{ color: 'gold', fontWeight: 'bold' }}>Game Creator</div>}
-                {/* Add other properties as needed */}
               </PlayerItem>
             ))}
           </PlayersList>
           {isGameCreator && (
             <Button onClick={handleStartGame}>Start Game</Button>
           )}
-        </LobbyContainer>
+        </CardContainer>
       )}
-     {appState === 'game' && (
-  <GameContainer>
-    <h2 style={{ color: '#fd726d' }}>? חושבים שאתם אמיצים ?</h2>
-    <h3 style={{ color: '#fd726d' }}>🍺 השאלה 🍺</h3>
-    <p style={{ color: 'white' }}>{question.question}</p>
-    <h4 style={{ color: '#fd726d' }}>🍺 תורו של 🍺 <br/> {selectedPlayer}</h4>
-    {playerName === selectedPlayer && ( // Show button only if it's the player's turn
-      <Button onClick={handlePlayerAction}>עשיתי</Button>
-    )}
-  </GameContainer>
-)}
- {appState === 'end' && (
-  <GameContainer style={{ textAlign: 'center', padding: '50px', color: '#fff' }}>
-    <h1 style={{ color: '#fd726d', fontSize: '2.5rem', marginBottom: '20px' }}>{playerName}</h1>
-    <p style={{ fontSize: '1.2rem', marginBottom: '40px', color: '#fff' }}>We hope you had fun!</p>
+      {appState === 'game' && (
+        <CardContainer>
+          <Title>? חושבים שאתם אמיצים ?</Title>
+          <h3 style={{ color: '#fd726d' }}>🍺 השאלה 🍺</h3>
+          <p style={{ color: 'white', fontSize: '1.5rem' }}>{question.question}</p>
+          <h4 style={{ color: '#fd726d' }}>🍺 תורו של 🍺 <br /> {selectedPlayer}</h4>
+          {playerName === selectedPlayer && (
+            <Button onClick={handlePlayerAction}>עשיתי</Button>
+          )}
+        </CardContainer>
+      )}
+     {appState === 'end' && (
+  <CardContainer style={{ textAlign: 'center', padding: '50px', color: '#fff', background: 'rgba(25, 25, 35, 0.9)', borderRadius: '20px', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)' }}>
+    <h1 style={{ color: '#fd726d', fontSize: '3rem', marginBottom: '20px' }}>{playerName}</h1>
+    <p style={{ fontSize: '1.5rem', marginBottom: '40px', color: '#fff' }}>היה כיף לשחק איתך</p>
     
-    <div style={{ margin: '50px 0' }}>
-      <div 
-        className="animation" 
-        style={{ 
-          width: '100px',
-          height: '100px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #fd726d, #ffab73)',
-          animation: 'pulse 1.5s infinite',
-          margin: '0 auto'
-        }}>
-      </div>
+    <div style={{ margin: '50px 0', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+      <h2 style={{ color: '#fd726d', fontSize: '2.5rem', marginBottom: '20px', animation: 'fadeIn 1s' }}>ניפגש שוב בקרוב</h2>
+      <h4 style={{ marginTop: '20px', color: '#fd726d', fontSize: '1.5rem', animation: 'slideIn 1s' }}>החיים הם משחק - שחק בו טוב</h4>
     </div>
+
+    <Button onClick={() => setAppState('connection')} style={{ marginTop: '30px', padding: '15px 30px', fontSize: '1.5rem', background: 'linear-gradient(90deg, #fd726d, #fc4a5d)', borderRadius: '10px', transition: 'background 0.3s ease' }}>
+      חזרה הביתה
+    </Button>
+
     <style>
       {`
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
           }
-          50% {
-            transform: scale(1.2);
+          to {
+            opacity: 1;
           }
-          100% {
-            transform: scale(1);
+        }
+
+        @keyframes slideIn {
+          from {
+            transform: translateY(-20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
           }
         }
       `}
     </style>
-  </GameContainer>
+  </CardContainer>
 )}
     </AppContainer>
   );
