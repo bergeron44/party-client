@@ -213,8 +213,8 @@ const App = () => {
           {isGameCreator && (
             <div>
               <h4 style={{ color: '#fd726d' }}>Creating Game...</h4>
-              <Button onClick={handleCreateGame}>Confirm</Button>
-              <Button onClick={() => setIsGameCreator(false)}>Cancel</Button>
+              <Button onClick={handleCreateGame}>צור לי חדר</Button>&nbsp;&nbsp;&nbsp;
+              <Button onClick={() => setIsGameCreator(false)}>בטל</Button>
             </div>
           )}
           {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
@@ -243,7 +243,7 @@ const App = () => {
       )}
       {appState === 'game' && (
         <CardContainer>
-          <Title>? חושבים שאתם אמיצים ?</Title>
+          <Title> חושבים שאתם אמיצים </Title>
           <h3 style={{ color: '#fd726d' }}>🍺 השאלה 🍺</h3>
           <p style={{ color: 'white', fontSize: '1.5rem' }}>{question.question}</p>
           <h4 style={{ color: '#fd726d' }}>🍺 תורו של 🍺 <br /> {selectedPlayer}</h4>
