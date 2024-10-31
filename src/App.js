@@ -3,8 +3,8 @@ import { io } from 'socket.io-client';
 import styled, { keyframes } from 'styled-components';
 
 // Socket Connection
-const socket = io('https://party-server-8ibk.onrender.com/');
-
+// const socket = io('https://party-server-8ibk.onrender.com/');
+const socket =io('http://localhost:3001');
 // CSS Animations
 const fadeIn = keyframes`
   from {
@@ -173,10 +173,11 @@ const App = () => {
     }
   };
 
-  const handleCreateGame = () => {
+  const handleCreateGame = (gameType) => {
+    console.log(gameType);
     if (playerName) {
       setIsGameCreator(true);
-      socket.emit('create-game', playerName, (newGameCode) => {
+      socket.emit('create-game', playerName, gameType, (newGameCode) => {
         setGameCode(newGameCode);
         setAppState('lobby');
       });
@@ -213,8 +214,8 @@ const App = () => {
           {isGameCreator && (
             <div>
               <h4 style={{ color: '#fd726d' }}>Creating Game...</h4>
-              <Button onClick={handleCreateGame}>צור לי חדר</Button>&nbsp;&nbsp;&nbsp;
-              <Button onClick={() => setIsGameCreator(false)}>בטל</Button>
+              <Button onClick={() => handleCreateGame("friends")}>שולחן חברים</Button>&nbsp;&nbsp;&nbsp;
+              <Button onClick={() => handleCreateGame("random")}>אנשים רנדומלים</Button>
             </div>
           )}
           {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
