@@ -3,8 +3,8 @@ import { io } from 'socket.io-client';
 import styled, { keyframes } from 'styled-components';
 
 // Socket Connection
-// const socket = io('https://party-server-8ibk.onrender.com/');
-const socket =io('http://localhost:3001');
+const socket = io('https://party-server-8ibk.onrender.com/');
+//const socket =io('http://localhost:3001');
 // CSS Animations
 const fadeIn = keyframes`
   from {
