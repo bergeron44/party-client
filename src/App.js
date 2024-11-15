@@ -5,7 +5,7 @@ import styled, { keyframes } from 'styled-components';
 // Socket Connection
 const socket = io('https://party-server-x0jn.onrender.com');
 //const socket = io('https://party-server-8ibk.onrender.com/');
-// const socket = io('http://localhost:3001');
+ //const socket = io('http://localhost:3001');
 
 // CSS Animations
 const fadeIn = keyframes`
@@ -124,18 +124,23 @@ const App = () => {
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [players, setPlayers] = useState([]);
+  const [allQuestion, setAllQuestion] = useState([]);
   const [question, setQuestion] = useState('');
   const [appState, setAppState] = useState('connection');
   const [errorMessage, setErrorMessage] = useState('');
   const [isGameCreator, setIsGameCreator] = useState(false);
 
   useEffect(() => {
-    socket.on('players-updated', (updatedPlayers) => {
-      setPlayers(updatedPlayers);
+    socket.on('players-updated', (game) => {
+      setPlayers(game.players); // עדכון רשימת השחקנים
+      if (allQuestion.length === 0) { // בדיקה אם מערך השאלות ריק
+        setAllQuestion(game.questions); // עדכון השאלות מהמשחק
+      }
     });
 
     socket.on('new-question', ({ question, selectedPlayer }) => {
       setQuestion(question);
+      console.log(question);
       setSelectedPlayer(selectedPlayer);
     });
 
@@ -150,12 +155,17 @@ const App = () => {
     socket.on('invalid-game-code', (message) => {
       setErrorMessage(message);
     });
+    socket.on('creator-first-update', (newGame) => {
+      setGameCode(newGame.code);
+      setPlayers(newGame.players);
+    });
 
     return () => {
       socket.off('players-updated');
       socket.off('new-question');
       socket.off('game-started');
       socket.off('invalid-game-code');
+      socket.off('creator-first-update');
     };
   }, []);
 
@@ -175,13 +185,16 @@ const App = () => {
     }
   };
 
-  const handleCreateGame = (gameType) => {
+  const handleCreateGame = () => {
+    console.log(playerName);
     if (playerName) {
       setIsGameCreator(true);
-      socket.emit('create-game', playerName, gameType, (newGameCode) => {
+      console.log(isGameCreator);
+      socket.emit('create-game', playerName, (newGameCode) => {
         setGameCode(newGameCode);
         setAppState('lobby');
       });
+      console.log(appState);
     }
   };
 
@@ -189,7 +202,20 @@ const App = () => {
     socket.emit('start-game', gameCode);
   };
 
-  const handlePlayerAction = () => {
+  const handlePlayerAction = async () => {
+    const isPlayerValid = await new Promise((resolve) => {
+      socket.emit('check-player-status', gameCode, (response) => {
+        resolve(response.isValid);
+      });
+    });
+  
+    if (!isPlayerValid) {
+      alert("You are no longer part of the game!");
+      setAppState('end');
+      return;
+    }
+  
+    // אם הכל תקין
     socket.emit('next-question', gameCode);
   };
 
@@ -204,7 +230,7 @@ const App = () => {
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
           />
-          <Button onClick={() => setIsGameCreator(true)}>Create Game</Button>
+          <Button onClick={handleCreateGame}>Create Game</Button>
           <Input
             type="text"
             placeholder="Enter game code"
@@ -212,13 +238,6 @@ const App = () => {
             onChange={(e) => setGameCode(e.target.value)}
           />
           <Button onClick={handleLogin}>Join Game</Button>
-          {isGameCreator && (
-            <div>
-              <h4 style={{ color: '#fd726d' }}>Creating Game...</h4>
-              <Button onClick={() => handleCreateGame("friends")}>שולחן חברים</Button>&nbsp;&nbsp;&nbsp;
-              <Button onClick={() => handleCreateGame("random")}>אנשים רנדומלים</Button>
-            </div>
-          )}
           {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
         </CardContainer>
       )}
