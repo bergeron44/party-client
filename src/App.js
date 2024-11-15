@@ -212,6 +212,7 @@ const App = () => {
     if (!isPlayerValid) {
       alert("You are no longer part of the game!");
       setAppState('end');
+      socket.emit('next-question', gameCode);
       return;
     }
   
