@@ -25,7 +25,7 @@ const AppContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: radial-gradient(circle, rgba(20, 20, 30, 1) 0%, rgba(0, 0, 0, 1) 100%);
+  background: radial-gradient(circle, rgba(255, 99, 99, 1) 0%, rgba(255, 255, 255, 1) 100%);
   font-family: 'Roboto', sans-serif;
   padding: 20px;
 `;
@@ -66,7 +66,7 @@ const Input = styled.input`
   border-radius: 10px;
   border: 2px solid transparent;
   margin: 10px 0;
-  width: 100%;
+  width: 80%;
   font-size: 1.2rem;
   transition: border 0.3s ease;
 
