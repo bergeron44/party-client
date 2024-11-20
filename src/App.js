@@ -147,9 +147,9 @@ const App = () => {
         setdifLevel('קל רצח');
       else if(question.rate===2)
         setdifLevel('קל ');
-      else if(question.rate===2)
+      else if(question.rate===3)
         setdifLevel('בינוני ');
-      else if(question.rate===2)
+      else if(question.rate===4)
         setdifLevel('קשה ');
       else
         setdifLevel('קשה אחושרמוטה');
