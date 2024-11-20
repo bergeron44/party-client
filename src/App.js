@@ -128,6 +128,7 @@ const App = () => {
   const [question, setQuestion] = useState('');
   const [appState, setAppState] = useState('connection');
   const [errorMessage, setErrorMessage] = useState('');
+  const [difLevel, setdifLevel] = useState('קל');
   const [isGameCreator, setIsGameCreator] = useState(false);
 
   useEffect(() => {
@@ -140,7 +141,19 @@ const App = () => {
 
     socket.on('new-question', ({ question, selectedPlayer }) => {
       setQuestion(question);
+
       console.log(question);
+      if(question.rate===1)
+        setdifLevel('קל רצח');
+      else if(question.rate===2)
+        setdifLevel('קל ');
+      else if(question.rate===2)
+        setdifLevel('בינוני ');
+      else if(question.rate===2)
+        setdifLevel('קשה ');
+      else
+        setdifLevel('קשה אחושרמוטה');
+
       setSelectedPlayer(selectedPlayer);
     });
 
@@ -266,6 +279,7 @@ const App = () => {
       {appState === 'game' && (
         <CardContainer>
           <Title> חושבים שאתם אמיצים </Title>
+          <h2 style={{ color: '#ADFF2F' }}>🍺 רמת קושי - {difLevel} 🍺</h2>
           <h3 style={{ color: '#fd726d' }}>🍺 השאלה 🍺</h3>
           <p style={{ color: 'white', fontSize: '1.5rem' }}>{question.question}</p>
           <h4 style={{ color: '#fd726d' }}>🍺 תורו של 🍺 <br /> {selectedPlayer}</h4>
