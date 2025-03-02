@@ -199,17 +199,51 @@ const App = () => {
   };
 
   const handleCreateGame = () => {
-    console.log(playerName);
     if (playerName) {
       setIsGameCreator(true);
-      console.log(isGameCreator);
-      socket.emit('create-game', playerName, (newGameCode) => {
-        setGameCode(newGameCode);
-        setAppState('lobby');
-      });
-      console.log(appState);
+  
+      // Get user's location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+  
+          console.log(`User location: ${userLocation.lat}, ${userLocation.lng}`);
+  
+          // Send location with game creation request
+          socket.emit('create-game', playerName, userLocation, (newGameCode) => {
+            setGameCode(newGameCode);
+            setAppState('lobby');
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          // Fallback: Default location if user denies permission
+          const defaultLocation = { lat: 31.252973, lng: 34.791462 }; // Be'er Sheva
+          socket.emit('create-game', playerName, defaultLocation, (newGameCode) => {
+            setGameCode(newGameCode);
+            setAppState('lobby');
+          });
+        }
+      );
     }
   };
+  
+
+  // const handleCreateGame = () => {
+  //   console.log(playerName);
+  //   if (playerName) {
+  //     setIsGameCreator(true);
+  //     console.log(isGameCreator);
+  //     socket.emit('create-game', playerName, (newGameCode) => {
+  //       setGameCode(newGameCode);
+  //       setAppState('lobby');
+  //     });
+  //     console.log(appState);
+  //   }
+  // };
 
   const handleStartGame = () => {
     socket.emit('start-game', gameCode);
